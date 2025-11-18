@@ -80,6 +80,7 @@ public class Main {
         cronometre.atura();
 
         System.out.println("Resumen final: ");
+        System.out.println("Total de operaciones realizadas: " + controlTower.getNumOperaciones());
         System.out.println("Tiempo total transcurrido: " + cronometre.mostra() / 1000.0 + " s");
         System.out.println("Simulación finalizada.");
     }

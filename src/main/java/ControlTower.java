@@ -19,6 +19,7 @@ public class ControlTower {
 
 
     public ControlTower(int numberOfRunways) {
+        this.numberOfRunways = numberOfRunways;
         this.runwaysInUse = new boolean[numberOfRunways];
         for (int i = 0; i < runwaysInUse.length; i++) {
             runwaysInUse[i] = true;
@@ -65,22 +66,22 @@ public class ControlTower {
         lock.lock();
         try{
             landingQueue.add(plane);
-            while (availableRunway() == false || getHighestPriorityPlane() != plane){
-                System.out.println("No hay pistas disponibles para el avión " + plane.getCode() + ". Esperando para aterrizar...");
+            while (!availableRunway() || getHighestPriorityPlane() != plane){
+                System.out.println("No hay pistas disponibls para el avión " + plane.getCode() + ". Esperando para aterrizar...");
                 plane.setCondition(AircraftCondition.ESPERANDO);
                 landingCondition.await();
             }
             landingQueue.remove(plane);
             int assignedRunway = assignRunway();
             System.out.println("El avión " + plane.getCode() + " está aterrizando.");
-            plane.setCondition(AircraftCondition.ATERRIZAR);
-            sleep(2000);
-            System.out.println("El avión " + plane.getCode() + " ha aterrizado en la pista " + assignedRunway + ".");
             numOperaciones++;
+            plane.setCondition(AircraftCondition.ATERRIZAR);
+            sleep(2000); // Simula temps d'aterratge
+            System.out.println("El avión " + plane.getCode() + " ha aterrizado en la pista " + assignedRunway + ".");
             plane.setCondition(AircraftCondition.EN_TERMINAL);
-            runwaysInUse[assignedRunway] = true;
-            landingCondition.signalAll(); // Avisar a un avión que espera para aterrizar
-            takeoffCondition.signalAll();
+            runwaysInUse[assignedRunway] = true; // alliberar pista
+            landingCondition.signalAll(); // Avisar altres avions que esperen per aterrar
+            takeoffCondition.signalAll(); // Avisar avions que esperen per enlairar-se
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -89,10 +90,10 @@ public class ControlTower {
     }
 
     public void requestTakeoff(Plane plane){
-        takeoffQueue.add(plane);
         lock.lock();
         try{
-            while (availableRunway() == false || landingQueue.isEmpty() || takeoffQueue.peek() != plane){
+            takeoffQueue.add(plane);
+            while (availableRunway() == false || landingQueue.isEmpty() == false || takeoffQueue.peek() != plane){
                 System.out.println("No hay pistas disponibles para el avión " + plane.getCode() + ". Esperando para despegar...");
                 takeoffCondition.await();
                 plane.setCondition(AircraftCondition.ESPERANDO);
@@ -100,6 +101,7 @@ public class ControlTower {
             takeoffQueue.remove();
             int assignedRunway = assignRunway();
             System.out.println("El avión " + plane.getCode() + " está despegando.");
+            numOperaciones++;
             plane.setCondition(AircraftCondition.DESPEGAR);
             sleep(2000);
             System.out.println("El avión " + plane.getCode() + " ha despegado de la pista " + assignedRunway + ".");
@@ -131,7 +133,7 @@ public class ControlTower {
         return priorityPlane;
     }
 
-    public float getFullTime(){
-        return Main.cronometre.mostra();
+    public int getNumOperaciones() {
+        return numOperaciones;
     }
 }
