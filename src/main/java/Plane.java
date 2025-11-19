@@ -25,13 +25,13 @@ public class Plane implements Runnable{
                 if (condition == AircraftCondition.EN_VUELO){
                     controlTower.requestLanding(this);
                     this.condition = AircraftCondition.ESPERANDO;
-                    Thread.sleep(2000); // Simula el tiempo en tierra
+                    Thread.sleep(1000); // Simula el tiempo en tierra
                     this.condition = AircraftCondition.EN_TERMINAL;
                     this.hasLanded = true;
                 } else if (condition == AircraftCondition.EN_TERMINAL) {
                     controlTower.requestTakeoff(this);
                     this.condition = AircraftCondition.DESPEGAR;
-                    Thread.sleep(2000); // Simula el tiempo de vuelo
+                    Thread.sleep(1000); // Simula el tiempo de vuelo
                     this.condition = AircraftCondition.EN_VUELO;
                     this.hasTakenOff = true;
                 }
